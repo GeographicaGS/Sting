@@ -35,14 +35,13 @@ function bytesToKB(bytes) {
     return (bytes / 1024).toFixed(2) + ' KB';
 };
 
-exports.buildJS = function (env,callback, version, buildName) {
+exports.buildJS = function (deps, version, buildName) {
 
 	console.log("Building JS files");
 	
-	var tmp = utils.getTmpFolder(env),
-		deps = utils.getDeps(env),
+	var tmp = utils.getTmpFolder(),
 		files = utils.getFiles(deps.JS.Core);
-	console.log('Concatenating and compressing ' + files.length + ' files...');
+	console.log("Concatenating and compressing " + files.length + " files...");
 
 	var newSrc = utils.combineFiles(files),
 	    pathPart = tmp + "/main" + (buildName ? '-' + buildName : ''),
@@ -50,15 +49,15 @@ exports.buildJS = function (env,callback, version, buildName) {
 	    oldSrc = utils.loadSilently(srcPath),
 	    srcDelta = getSizeDelta(newSrc, oldSrc, true);
 
-	console.log('\tUncompressed: ' + bytesToKB(newSrc.length) + srcDelta);
+	console.log("\tUncompressed: " + bytesToKB(newSrc.length) + srcDelta);
 
 
 	if (newSrc !== oldSrc) {		
 		fs.writeFileSync(srcPath, newSrc);
-		console.log('\tSaved to ' + srcPath);
+		console.log("\tSaved to " + srcPath);
 	}
 	
-	var path = pathPart + '.js',
+	var path = pathPart + ".js",
 	    oldCompressed = utils.loadSilently(path),
 		newCompressed =
 			utils.getJSThirpartyCombined(deps)+
@@ -68,21 +67,19 @@ exports.buildJS = function (env,callback, version, buildName) {
 			}).code;		
 	    delta = getSizeDelta(newCompressed, oldCompressed);
 	
-	console.log('\tCompressed: ' + bytesToKB(newCompressed.length) + delta);
+	console.log("\tCompressed: " + bytesToKB(newCompressed.length) + delta);
 	
 	if (newCompressed !== oldCompressed) {
 		fs.writeFileSync(path, newCompressed);
-		console.log('\tSaved to ' + path);
+		console.log("\tSaved to " + path);
 	}
 	
-	callback(env);
 };
 
-exports.buildCSS = function (env,callback, version, buildName){
+exports.buildCSS = function (deps, version, buildName){
 	
 	console.log("Building CSS files");
-	var tmp = utils.getTmpFolder(env),
-		deps = utils.getDeps(env),
+	var tmp = utils.getTmpFolder(),
 		files = utils.getFiles(deps.CSS.Core);
 		filesThirdParty = utils.getFiles(deps.CSS.ThirdParty);
 	
@@ -138,7 +135,6 @@ exports.buildCSS = function (env,callback, version, buildName){
 		console.log('\tSaved to ' + path);
 	}
 	
-	callback(env);
 }
 
 function getTemplateFiles(tplFolder) {
@@ -153,17 +149,16 @@ function getTemplateFiles(tplFolder) {
 	return response;
 }
 
-exports.buildTemplate = function (env,callback, version, buildName){
+exports.buildTemplate = function (deps,version, buildName){
 	
 	console.log("Building Templates");
 	
-	var tmp = utils.getTmpFolder(env),
-		tplFolder = env ? (env + "/js/template/") :"js/template/",
-		files = getTemplateFiles(tplFolder);
+	var tmp = utils.getTmpFolder(),
+		files = getTemplateFiles(deps.templateFolder);
 		
 	console.log('Concatenating ' + files.length + ' files...');
 
-	var newSrc = combineFilesTemplate(files,tplFolder),
+	var newSrc = combineFilesTemplate(files,deps.templateFolder),
 	    pathPart = tmp + "/main-template" + (buildName ? '-' + buildName : ''),
 	    srcPath = pathPart + '-src.html',
 
@@ -180,5 +175,4 @@ exports.buildTemplate = function (env,callback, version, buildName){
 		console.log('\tSaved to ' + srcPath);
 	}
 	
-	callback(env);
 }

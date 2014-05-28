@@ -1,6 +1,5 @@
 var fs = require('fs'),
-	tmp = "build/tmp",
-	deps = require("./deps.js").deps;
+	tmp = "build/tmp";
 
 function combineFiles (files) {
 	var content = '';
@@ -46,21 +45,23 @@ function createDirIfNotExist(path)
 
 exports.createDirIfNotExist=  createDirIfNotExist;
 
-function getTmpFolder(env)
+function createFileIfNotExist(path,content){
+	if (!fs.existsSync(path)) {
+		fs.writeFile(path, content, function(err) {
+		    if(err) {
+		        console.log("ERROR saving " + path +" " + err);
+		    }
+		});
+	} 
+}
+exports.createFileIfNotExist=  createFileIfNotExist;
+
+
+function getTmpFolder()
 {
-	return ( env ? tmp + "/" + env : tmp);
+	return tmp;
 }
 exports.getTmpFolder = getTmpFolder;
-
-function getDeps(env)
-{
-	if (!env){
-		return deps;
-	}
-	
-	return env == "backend" ? deps.Backend : deps.Frontend;
-}
-exports.getDeps = getDeps;
 
 
 exports.tmp = tmp;

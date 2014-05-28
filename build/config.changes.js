@@ -5,7 +5,8 @@ var config = {
         "user": "pivotal_admin",
         "password" : "pivotal",
         "db" : "pivotal"
-    }
+    },
+    langs : ["en","es","fr"]
 }
 
 exports.config = config;

@@ -8,15 +8,10 @@ function getScriptTag(file){
 	return "<script type='text/javascript' src='" + file + "'></script>";	
 }
 
-function generateIndex(env,lang,templates,debug){
+function generateIndex(deps,cdnPath,lang,templates,debug){
 	
-	var	tmp = utils.getTmpFolder(env),
-		cdnPath = "../cdn",
+	var	tmp = utils.getTmpFolder(),
 		index = fs.readFileSync(tmp +"/index-"+lang + ".html", "utf8");
-
-    if (env){
-        cdnPath += "/"+ env;
-    }
 	
 	index = index.replace("<body>","<body>" + templates);
 	
@@ -24,9 +19,8 @@ function generateIndex(env,lang,templates,debug){
 		index = index.replace("</body>",getScriptTag("js/main.min.js") + "</body>").replace(/\n/g,"");
 	}
 	else{
-		var deps = utils.getDeps(env),
-			jsThird = deps.JS.ThirdParty.src;
-		var jsCore =  deps.JS.Core.src;
+		var jsThird = deps.JS.ThirdParty.src;
+			jsCore =  deps.JS.Core.src;
 		
 		var js = "";
 		
@@ -42,7 +36,7 @@ function generateIndex(env,lang,templates,debug){
 	}
     
    
-	var newPath = cdnPath +"/" + lang +"/index.html",
+	var newPath = cdnPath + "/" + lang + "/index.html",
 		oldStream = utils.loadSilently(newPath)
     
 	if (oldStream != index) {
@@ -74,14 +68,10 @@ function copyFileIsNew(oldPath,newPath) {
     
 }
 
-exports.create = function(env,callback,debug){
+exports.create = function(deps,cdnPath,debug){
     console.log("Creating resources files" + (debug ? " (debug enable)" : ""));
 	
-	var tmp = utils.getTmpFolder(env),
-		cdnPath = "../cdn";
-    if (env){
-        cdnPath += "/"+ env;
-    }
+	var tmp = utils.getTmpFolder();
 		
     for (i in langs){
         var lng = langs[i],
@@ -92,11 +82,10 @@ exports.create = function(env,callback,debug){
 		utils.createDirIfNotExist(jsLangPath);
         // Recreate index.html
         templates = fs.readFileSync(tmp +"/template-"+lng+".html", "utf8");
-        generateIndex(env,lng,templates,debug);
+        generateIndex(deps,cdnPath,lng,templates,debug);
         
         // Refresh js main file
 		if (!debug) {
-			
 			var jsNewPath = tmp +"/main-" + lng + ".min.js",
 				jsOldPath = jsLangPath + "/main.min.js";
 			copyFileIsNew(jsOldPath,jsNewPath);
@@ -109,6 +98,5 @@ exports.create = function(env,callback,debug){
         cssOldPath = cdnPath + "/css/main.min.css";
         copyFileIsNew(cssOldPath,cssNewPath);
 		
-	callback();
     
 };

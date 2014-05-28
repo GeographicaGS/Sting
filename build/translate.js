@@ -45,17 +45,15 @@ function executeQuery(sql,callback) {
     });
 }
 
-exports.translate = function(env,callback,debug){
-    var tmp = utils.getTmpFolder(env),
+exports.translate = function(deps,callback,debug){
+    var tmp = utils.getTmpFolder(),
         templates = fs.readFileSync(tmp+"/main-template-src.html", 'utf8'),
         templatesKeys = getLangTags(templates),
         
         js = fs.readFileSync(tmp+"/main.js", 'utf8'),
         jsKeys = getLangTags(js),
 
-        tplFolder = env ? (env + "/js/template/index.html") :"js/template/index.html",
-        
-        index = fs.readFileSync(tplFolder, 'utf8'),
+        index = fs.readFileSync(deps.templateFolder + "/index.html", 'utf8'),
         indexKeys = getLangTags(index),
         
         allKeys = templatesKeys.concat(jsKeys).concat(indexKeys);
