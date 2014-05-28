@@ -1,4 +1,6 @@
 var deps = {}
+deps.templateFolder = "js/template";
+
 deps.JS = {
 	ThirdParty:{
 		src: [
@@ -46,6 +48,7 @@ deps.CSS = {
 		]
 	}
 };
+
 
 if (typeof exports !== 'undefined') {
 	exports.deps = deps;
