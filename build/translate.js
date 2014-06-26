@@ -19,7 +19,9 @@ function getLangTags(s){
 }
 
 function replaceLangString(str,origin,target){
-    var regex = new RegExp("<lang>"+ origin + "</lang>","g");
+    origin = origin.replace("(","\\(");
+    origin = origin.replace(")","\\)");
+    var regex = new RegExp("<lang>"+ origin + "<\\/lang>","g");
     return str.replace(regex,target);
 }
 
@@ -129,14 +131,7 @@ exports.translate = function(deps,callback,debug){
             if (!k || !dbKeys.hasOwnProperty(k) ) {
                 // key missing
                 for (l in langs){
-                    //dict[k][langs[l]] = "<span class='translation_error'>" + k + "</span>";
-                    
-                    if (debug){
-                        dict[k][langs[l]] = k;
-                    }
-                    else{
-                        dict[k][langs[l]] = "<span class='translation_error'>" + k + "</span>";    
-                    }
+                    dict[k][langs[l]] = k;
                 }
             }
             else{
@@ -146,12 +141,7 @@ exports.translate = function(deps,callback,debug){
                         dict[k][langs[l]] = dbKeys[k][langs[l]];
                     }
                     else{
-                        if (debug){
-                            dict[k][langs[l]] = k;
-                        }
-                        else{
-                            dict[k][langs[l]] = "<span class='translation_error'>" + k + "</span>";    
-                        }
+                        dict[k][langs[l]] = k;
                     }
                 }
             }
