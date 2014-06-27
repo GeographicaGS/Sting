@@ -8,15 +8,16 @@ function getScriptTag(file){
 	return "<script type='text/javascript' src='" + file + "'></script>";	
 }
 
-function generateIndex(deps,cdnPath,lang,templates,debug){
+function generateIndex(version,deps,cdnPath,lang,templates,debug){
 	
 	var	tmp = utils.getTmpFolder(),
 		index = fs.readFileSync(tmp +"/index-"+lang + ".html", "utf8");
 	
 	index = index.replace("<body>","<body>" + templates);
+	index = index.replace("main.min.css","main.min.css?"+version);
 	
 	if (!debug) {
-		index = index.replace("</body>",getScriptTag("/"+lang+"/js/main.min.js") + "</body>").replace(/\n/g,"");
+		index = index.replace("</body>",getScriptTag("/" + lang +"/js/main.min.js?" + version) + "</body>").replace(/\n/g,"");
 	}
 	else{
 		var jsThird = deps.JS.ThirdParty.src;
@@ -25,16 +26,18 @@ function generateIndex(deps,cdnPath,lang,templates,debug){
 		var js = "";
 		
 		for (i in jsThird) {
-			js += getScriptTag("/src/" + jsThird[i]) +"\n\n";
+			js += getScriptTag("/src/" + jsThird[i] + "?" + version) +"\n\n";
 		}
 		
 		for (i in jsCore) {
-			js += getScriptTag("/src/" + jsCore[i]) +"\n\n";
+			js += getScriptTag("/src/" + jsCore[i] +"?" + version) + "\n\n";
 		}
 		
 		index = index.replace("</body>",js + "</body>");
 	}
-    
+
+	var jsVersion = "<script type='text/javascript'>app.version='"+ version+"'</script>";
+    index = index.replace("</body>",jsVersion + "</body>");
    
 	var newPath = cdnPath + "/" + lang + "/index.html",
 		oldStream = utils.loadSilently(newPath)
@@ -68,7 +71,7 @@ function copyFileIsNew(oldPath,newPath) {
     
 }
 
-exports.create = function(deps,cdnPath,debug){
+exports.create = function(version,deps,cdnPath,debug){
     console.log("Creating resources files" + (debug ? " (debug enable)" : ""));
 	
 	var tmp = utils.getTmpFolder();
@@ -82,7 +85,7 @@ exports.create = function(deps,cdnPath,debug){
 		utils.createDirIfNotExist(jsLangPath);
         // Recreate index.html
         templates = fs.readFileSync(tmp +"/template-"+lng+".html", "utf8");
-        generateIndex(deps,cdnPath,lng,templates,debug);
+        generateIndex(version,deps,cdnPath,lng,templates,debug);
         
         // Refresh js main file
 		if (!debug) {

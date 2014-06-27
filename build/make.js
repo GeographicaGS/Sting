@@ -1,9 +1,9 @@
-var build = require("./build.js");
-var translate = require("./translate.js");
-var resource = require("./resource.js");
-var utils = require("./utils.js"),
-	config = require("./config.js").config;
-
+var build = require("./build.js"),
+	translate = require("./translate.js"),
+	resource = require("./resource.js"),
+	utils = require("./utils.js"),
+	config = require("./config.js").config,
+	exec = require("child_process").exec;
 
 
 function make(opts){
@@ -71,16 +71,21 @@ function make(opts){
 	console.log("---------- " + s + " ---------");
 	console.log("----------------------------------------");
 	translate.translate(opts.deps,function(){
-		console.log("\n-----------------------------------------------");
-		console.log("---------- BUILDING  RESOURCES ---------");
-		console.log("-----------------------------------------------");
-		resource.create(opts.deps,opts.cdnPath,debug);
-		if (debug){
-			console.log("\n\nDEBUG BUILD COMPLETE SUCCESSFULLY\n\n");
-		}
-		else{
-			console.log("\n\nBUILD COMPLETE SUCCESSFULLY\n\n");
-		}
+
+		exec("git rev-parse HEAD",function (error, stdout, stderr){
+	       	version = stdout.replace(/(\r\n|\n|\r)/gm,"");
+	       	console.log("\n-----------------------------------------------");
+			console.log("---------- BUILDING  RESOURCES ---------");
+			console.log("-----------------------------------------------");
+			resource.create(version,opts.deps,opts.cdnPath,debug);
+			if (debug){
+				console.log("\n\nDEBUG BUILD COMPLETE SUCCESSFULLY\n\n");
+			}
+			else{
+				console.log("\n\nBUILD COMPLETE SUCCESSFULLY\n\n");
+			}
+	    });
+		
 	},debug);
 
 }
