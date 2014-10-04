@@ -83,69 +83,70 @@ exports.translate = function(deps,callback,debug){
     
     function insertMissingKeys(dbKeys,callback){
         
-        // check if the current keys are in the database. If not, we insert it        
-        var keysToInsert = [];
-        for (i in allKeys)
-        {
-            var k = allKeys[i];
-            // Does the key exist? Is the key already in the array?
-            if( (!k || !dbKeys.hasOwnProperty(k))
-                && (keysToInsert.indexOf(k) ==-1)) {
-                keysToInsert.push(k);
-            }
-        }
+        // // check if the current keys are in the database. If not, we insert it        
+        // var keysToInsert = [];
+        // for (i in allKeys)
+        // {
+        //     var k = allKeys[i];
+        //     // Does the key exist? Is the key already in the array?
+        //     if( (!k || !dbKeys.hasOwnProperty(k))
+        //         && (keysToInsert.indexOf(k) ==-1)) {
+        //         keysToInsert.push(k);
+        //     }
+        // }
         
-        if (keysToInsert.length>0) {
-            // Insert new keys in database
+        // if (keysToInsert.length>0) {
+        //     // Insert new keys in database
             
-            // Build SQL sentence
-            var sql = "INSERT INTO translation VALUES ";
+        //     // Build SQL sentence
+        //     var sql = "INSERT INTO translation VALUES ";
             
-            for (i in keysToInsert){
-                k = keysToInsert[i];
-                sql += "('"+ k +"',NULL,NULL),";
-            }
+        //     for (i in keysToInsert){
+        //         k = keysToInsert[i];
+        //         sql += "('"+ k +"',NULL,NULL),";
+        //     }
             
-            sql = sql.slice(0,-1) + ";";
+        //     sql = sql.slice(0,-1) + ";";
             
-            executeQuery(sql,function(err,result){
-                callback();
-            });
+        //     executeQuery(sql,function(err,result){
+        //         callback();
+        //     });
             
             
-        }
-        else{
-            callback();    
-        }
+        // }
+        // else{
+        //     callback();    
+        // }
+        callback();
     }
     
     
     function applyTranslations(dbKeys){
         // Create translations dictionary
         dict = {};
-        for (i in allKeys)
-        {
-            var k = allKeys[i];
-            dict[k] = {};
-            // Does the key exist?
-            if (!k || !dbKeys.hasOwnProperty(k) ) {
-                // key missing
-                for (l in langs){
-                    dict[k][langs[l]] = k;
-                }
-            }
-            else{
-                // key exist                
-                for (l in langs){
-                    if (dbKeys[k][langs[l]]) {
-                        dict[k][langs[l]] = dbKeys[k][langs[l]];
-                    }
-                    else{
-                        dict[k][langs[l]] = k;
-                    }
-                }
-            }
-        }
+        // for (i in allKeys)
+        // {
+        //     var k = allKeys[i];
+        //     dict[k] = {};
+        //     // Does the key exist?
+        //     if (!k || !dbKeys.hasOwnProperty(k) ) {
+        //         // key missing
+        //         for (l in langs){
+        //             dict[k][langs[l]] = k;
+        //         }
+        //     }
+        //     else{
+        //         // key exist                
+        //         for (l in langs){
+        //             if (dbKeys[k][langs[l]]) {
+        //                 dict[k][langs[l]] = dbKeys[k][langs[l]];
+        //             }
+        //             else{
+        //                 dict[k][langs[l]] = k;
+        //             }
+        //         }
+        //     }
+        // }
         
         // Here we've the dictonary created. Let's replace strings
         // Translations for template in all languages
