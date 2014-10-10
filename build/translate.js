@@ -2,8 +2,10 @@ var fs = require('fs'),
     pg = require('pg'),  
     config = require("./config.js").config,
     langs = config.langs,  
-    conString = "postgres://"+config.database.user + ":" + config.database.password + "@" + config.database.host + ":" + config.database.port+ "/" + config.database.db,
+    conString = "mongodb://" + config.database.user + ":" + config.database.password + "@localhost:" + config.database.port + "/" +config.database.db,
     utils = require("./utils.js");
+    mongoose = require('mongoose');
+    translation = null;
 
 function getLangTags(s){
     var matches =  s.match( /<lang>(.*?)<\/lang>/g);
@@ -25,27 +27,36 @@ function replaceLangString(str,origin,target){
     return str.replace(regex,target);
 }
 
-function executeQuery(sql,callback) {
-    var client = new pg.Client(conString);
-    client.connect(function(err) {
-        if(err){
-            console.error('could not connect to postgres', err);
-            callback(err,null);
-            return;
-        }
-        client.query(sql, function(err, result) {
-            if(err)
-            {
-                console.error('error running query', err);
-                callback(err,null);
-                return;
-            }
-            client.end();
-            callback(err,result);
-            return;
-        });
-    });
-}
+// function executeQuery(sql,callback) {
+//     var mongoose = require('mongoose');
+//     mongoose.connect(conString);
+//     var db = mongoose.connection;
+//     db.on('error', console.error.bind(console, 'connection error:'));
+//     db.once('open', function callback () {
+
+//         var auxLangs = {
+//             key: String
+//         };
+//         for(var i=0; i<langs.length;i++){
+//             auxLangs[langs[i]] = String;
+//         }
+//         var translationSchema = mongoose.Schema(auxLangs,{ collection: 'translation' });
+
+//         var translation = mongoose.model('translation', translationSchema);
+//         var trans = new translation({ key: 'prueba', es:'pruebaEs', en:'pruebaEn' });
+//         translation.findOne({'key': 'prueba'}, function (err, element) {
+//               if(!element){
+//                 trans.save(function(err, thor) {
+//                     mongoose.connection.close();
+//                     return;
+//                 });
+//               }else{
+//                 mongoose.connection.close();
+//               }
+
+//         });
+//     });
+// }
 
 exports.translate = function(deps,callback,debug){
     var tmp = utils.getTmpFolder(),
@@ -61,92 +72,107 @@ exports.translate = function(deps,callback,debug){
         allKeys = templatesKeys.concat(jsKeys).concat(indexKeys);
 
         
-    function getDBKeys(callback){        
-        executeQuery("SELECT * from translation",function(err,result){
-            if (err) {
-                callback(null);
+    function getDBKeys(callback){       
+        mongoose.connect(conString);
+        var db = mongoose.connection;
+        db.on('error', console.error.bind(console, 'connection error:'));
+        db.once('open', function () {
+
+            var auxLangs = {
+                key: String
+            };
+            for(var i=0; i<langs.length;i++){
+                auxLangs[langs[i]] = String;
             }
-            else{                
-                var dbKeys = {}
-                for (i in result.rows){
-                    var row = result.rows[i]                
-                    dbKeys[row.key] = {}
+            var translationSchema = mongoose.Schema(auxLangs,{ collection: 'translation' });
+
+            translation = mongoose.model('translation', translationSchema);
+            translation.find({}, function (err, trans) {
+                var dbKeys = {};
+                for(var i=0; i<trans.length; i++){
+                    dbKeys[trans[i].key] = {}
                     for (l in langs){
-                        dbKeys[row.key][langs[l]] = row[langs[l]];
+                        dbKeys[trans[i].key][langs[l]] = trans[i][langs[l]];
                     }
-                }               
-                
+                }
+                mongoose.connection.close();
                 callback(dbKeys);
-            }
-        });    
+            });
+        });
+
     }
     
     function insertMissingKeys(dbKeys,callback){
-        
         // // check if the current keys are in the database. If not, we insert it        
-        // var keysToInsert = [];
-        // for (i in allKeys)
-        // {
-        //     var k = allKeys[i];
-        //     // Does the key exist? Is the key already in the array?
-        //     if( (!k || !dbKeys.hasOwnProperty(k))
-        //         && (keysToInsert.indexOf(k) ==-1)) {
-        //         keysToInsert.push(k);
-        //     }
-        // }
+        var keysToInsert = [];
+        for (i in allKeys)
+        {
+            var k = allKeys[i];
+            // Does the key exist? Is the key already in the array?
+            if( (!k || !dbKeys.hasOwnProperty(k))
+                && (keysToInsert.indexOf(k) ==-1)) {
+                keysToInsert.push(k);
+            }
+        }
         
-        // if (keysToInsert.length>0) {
-        //     // Insert new keys in database
-            
-        //     // Build SQL sentence
-        //     var sql = "INSERT INTO translation VALUES ";
-            
-        //     for (i in keysToInsert){
-        //         k = keysToInsert[i];
-        //         sql += "('"+ k +"',NULL,NULL),";
-        //     }
-            
-        //     sql = sql.slice(0,-1) + ";";
-            
-        //     executeQuery(sql,function(err,result){
-        //         callback();
-        //     });
-            
-            
-        // }
-        // else{
-        //     callback();    
-        // }
-        callback();
+        if (keysToInsert.length>0) {
+            mongoose.connect(conString);
+            var db = mongoose.connection;
+            db.on('error', console.error.bind(console, 'connection error:'));
+            db.once('open', function() {
+                var auxLangs = {
+                    key: String
+                };
+                for(var i=0; i<langs.length;i++){
+                    auxLangs[langs[i]] = null;
+                }
+                var cont = keysToInsert.length;
+                for (i in keysToInsert){
+                    auxLangs["key"] = keysToInsert[i];
+                    trans = new translation(auxLangs);
+                    trans.save(function(err, thor) {
+                        cont -- ;
+                        if(cont == 0){
+                            mongoose.connection.close();
+                            callback();
+                        }
+                        return;
+                    });
+                }
+                
+            });
+        }else{
+            callback();
+        }
     }
     
     
     function applyTranslations(dbKeys){
         // Create translations dictionary
         dict = {};
-        // for (i in allKeys)
-        // {
-        //     var k = allKeys[i];
-        //     dict[k] = {};
-        //     // Does the key exist?
-        //     if (!k || !dbKeys.hasOwnProperty(k) ) {
-        //         // key missing
-        //         for (l in langs){
-        //             dict[k][langs[l]] = k;
-        //         }
-        //     }
-        //     else{
-        //         // key exist                
-        //         for (l in langs){
-        //             if (dbKeys[k][langs[l]]) {
-        //                 dict[k][langs[l]] = dbKeys[k][langs[l]];
-        //             }
-        //             else{
-        //                 dict[k][langs[l]] = k;
-        //             }
-        //         }
-        //     }
-        // }
+        for (i in allKeys)
+        {
+            var k = allKeys[i];
+            dict[k] = {};
+            // Does the key exist?
+            if (!k || !dbKeys.hasOwnProperty(k) ) {
+                // key missing
+                for (l in langs){
+                    dict[k][langs[l]] = k;
+                }
+            }
+            else{
+                // key exist                
+                for (l in langs){
+                    if (dbKeys[k][langs[l]]) {
+                        dict[k][langs[l]] = dbKeys[k][langs[l]];
+                    }
+                    else{
+                        dict[k][langs[l]] = k;
+                    }
+                }
+            }
+        }
         
         // Here we've the dictonary created. Let's replace strings
         // Translations for template in all languages
