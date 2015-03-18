@@ -29,12 +29,12 @@ function make(opts){
 
 	// let's create tmp folder
 	utils.createDirIfNotExist("build");
-	utils.createDirIfNotExist(utils.tmp);
 
 	// Let's create the cdn folder if not exists
 	utils.createDirIfNotExist(opts.outputPath);
 	utils.createDirIfNotExist(opts.outputPath + "/img");
 	utils.createDirIfNotExist(opts.outputPath + "/css");
+	utils.createDirIfNotExist(opts.outputPath + "/js");
 	utils.createDirIfNotExist(opts.outputPath + "/fonts");
 
 	var htaccess = "RewriteEngine On\n" +
@@ -49,7 +49,13 @@ function make(opts){
 
 	build.buildCSS({
 		"files": opts.deps.CSS,
-		"outputPath" : opts.outputPath
+		"outputPath" : opts.outputPath + "/css"
+	});
+
+	build.buildJS({
+		"files": opts.deps.JS,
+		"outputPath" : opts.outputPath + "/js",
+		"outSourceMap" :  opts.outSourceMap
 	});
 
 	var debug = opts && opts.debug===true ? true : false;
@@ -57,14 +63,6 @@ function make(opts){
 	if (!opts.langs){
 		utils.createDirIfNotExist(opts.outputPath );	
 		utils.createFileIfNotExist(opts.outputPath + "/.htaccess",htaccess);
-		utils.createDirIfNotExist(opts.outputPath + "/js");
-
-
-		build.buildJS({
-			"files": opts.deps.JS,
-			"lang": null,
-			"outputPath" : opts.outputPath + "/js"
-		});
 
 		build.buildHTML({
 			"templateFolder": opts.deps.templateFolder,
@@ -79,24 +77,12 @@ function make(opts){
 		var i18n = require("i18n");
 		i18n.configure({
 		    locales:opts.langs,
-		    directory: opts.localesPath
+		    directory: opts.outputPath + "/locales"
 		});
 
 		for (var i=0;i< opts.langs.length;i++){
 			utils.createDirIfNotExist(opts.outputPath +"/"+ opts.langs[i]);	
-			utils.createDirIfNotExist(opts.outputPath +"/"+ opts.langs[i] + "/js");	
 			utils.createFileIfNotExist(opts.outputPath +"/"+ opts.langs[i] + "/.htaccess",htaccess);
-
-			console.log("\n--------------------");
-			console.log("Building JS [" + opts.langs[i] + "]");
-			console.log("--------------------");
-
-			build.buildJS({
-				"files": opts.deps.JS,
-				"i18n" : i18n,
-				"lang": opts.langs[i],
-				"outputPath" : opts.outputPath + "/" + opts.langs[i] + "/js"
-			});
 
 			console.log("\n--------------------");
 			console.log("Building HTML [" + opts.langs[i] + "]");
@@ -112,6 +98,8 @@ function make(opts){
 			});
 		}
 	}
+
+	console.log("Build process complete successfully");
 }
 
 exports.make = make;

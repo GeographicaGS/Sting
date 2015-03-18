@@ -10,21 +10,15 @@ function combineFiles (files) {
 }
 exports.combineFiles = combineFiles;
 
-function getFiles(deps,compiled) {
+function getFiles(deps) {
 
-	// deal with default values
-	compiled = compiled!==true && compiled!==false ? false: compiled;
-	
 	var files = [];
 
-	for (var i in deps) {
+	for (var i=0;i<deps.length;i++) {
 		if (typeof deps[i] === "object"){
-			// It's an object, it could be compiled or not
-			if (compiled == deps[i].compiled){
-				files.push(deps[i].src);
-			}
+			files.push(deps[i].src);
 		}
-		else if (typeof deps[i] === "string" && !compiled){
+		else{
 			// if no object dep is compiled
 			files.push(deps[i]);
 		}
@@ -33,15 +27,7 @@ function getFiles(deps,compiled) {
 	return files;
 };
 
-function getFilesCompiled(deps) {
-	return getFiles(deps,true);
-};
-function getFilesNonCompiled(deps) {
-	return getFiles(deps,false);
-};
-
-exports.getFilesNonCompiled = getFilesNonCompiled;
-exports.getFilesCompiled = getFilesCompiled;
+exports.getFiles = getFiles;
 
 function loadSilently(path) {
 	try {

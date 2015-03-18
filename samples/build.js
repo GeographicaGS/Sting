@@ -8,8 +8,8 @@ sting.make({
     "deps" : deps,
     "outputPath" : "../www",
     // Languages
-    "langs" : ["es","en","fr"],
+    "langs" : ["es"],
     //"langs" : null ,
-    "localesPath" : "../locales"
+    "outSourceMap" :  debug ? "main.min.map" : null,
+    
 });
-

@@ -4,27 +4,12 @@ var fs = require('fs'),
 	UglifyCSS = require('uglifycss'),       
 	utils = require("./utils.js");
 
-function getSizeDelta(newContent, oldContent, fixCRLF) {
-	if (!oldContent) {
-		return ' (new)';
-	}
-	if (newContent === oldContent) {
-		return ' (unchanged)';
-	}
-	if (fixCRLF) {
-		newContent = newContent.replace(/\r\n?/g, '\n');
-		oldContent = oldContent.replace(/\r\n?/g, '\n');
-	}
-	var delta = newContent.length - oldContent.length;
-
-	return delta === 0 ? '' : ' (' + (delta > 0 ? '+' : '') + delta + ' bytes)';
-}
-
 function combineFilesTemplate(files) {
 	var content = '';
 	for (var i = 0, len = files.length; i < len; i++) {
+		var id = files[i].slice(0,-5).replace("js/template/","").replace(/\//g,"-");
 		
-		content += "<script type='text/template' id='"+files[i].slice(0,-5) +"'>\n" + fs.readFileSync(files[i], 'utf8') +"</script>\n\n";		
+		content += "<script type='text/template' id='"+ id +"'>\n" + fs.readFileSync(files[i], 'utf8') +"</script>\n\n";		
 	}
 	return content;
 }
@@ -33,54 +18,34 @@ function bytesToKB(bytes) {
     return (bytes / 1024).toFixed(2) + ' KB';
 };
 
-
 exports.buildJS = function (opts) {
 
-	var files = opts.files,
-		i18n = opts.i18n,
-		lang = opts.lang,
+	var files = utils.getFiles(opts.files),
 		targetStr = "";
 
-	for (var i=0;i<files.length;i++){
-		var fileCompiled;
-		if (typeof files[i] === "object"){
-			//console.log(files[i]);
-			if (!files[i].hasOwnProperty("src")){
-				throw("Not found src for "+ files[i]);
-			}
-			fileSrc = files[i].src;
-		}
+	var localopts = {};
 
-		else{
-			fileSrc = files[i];
-		}
-
-		var fileString = utils.loadSilently(fileSrc);
-
-		if (lang){
-			var translate = require("./translate.js")(i18n);
-			fileString = translate.translate(fileString,lang);
-		}
-
-		if (typeof files[i] === "object" && files[i].compiled==true){
-			console.log("Attaching file " + fileSrc);
-			// not compile this file
-			fileCompiled = fileString;
-		}
-		else{
-			console.log("Compiling file " + fileSrc);
-			fileCompiled = UglifyJS.minify(fileString, {
-				warnings: true,
-				fromString: true
-			}).code;
-		}
-
-		targetStr += fileCompiled;
+	if (opts.outSourceMap){
+		localopts["outSourceMap"] = opts.outSourceMap;
+		localopts["sourceRoot"] = "/src";
 	}
 
+	if (opts.sourceRoot) {
+		localopts["sourceRoot"] = opts.sourceRoot;
+	}
+
+	var result = UglifyJS.minify(files, localopts);
+
+	console.log("Writing main.min.js");
 	var path = opts.outputPath + "/main.min.js";
-	fs.writeFileSync(path, targetStr);
-	
+	fs.writeFileSync(path, result.code);
+
+	if (opts.outSourceMap){
+		console.log("Writing " + localopts["outSourceMap"]);
+		var path = opts.outputPath + "/" + localopts["outSourceMap"];
+		fs.writeFileSync(path, result.map);
+	}
+
 };
 
 exports.buildCSS = function (opts){
@@ -138,7 +103,7 @@ exports.buildCSS = function (opts){
 		targetStr += fileCompiled;
 	}
 
-	var fpath = opts.outputPath + "/css/styles.min.css";
+	var fpath = opts.outputPath + "/styles.min.css";
 	console.log("Build successfully styles.min.css");
 	fs.writeFileSync(fpath, targetStr);
 	
@@ -189,20 +154,18 @@ exports.buildHTML = function (opts){
 
 	index = index.replace("<body>","<body>" + templateString);
 	
-	var js = "";
+	// var js = "";
 
-	if (debug){
-		for (var i=0;i<jsFiles.length;i++){
-			var f = typeof jsFiles[i]=="object" ? jsFiles[i].src : jsFiles[i];
-			js += getScriptTag("/src" + f);
-		}
-	}
-	else{
-		js += getScriptTag("js/main.min.js");
-	}
-
-	
-	index = index.replace("</body>",js + "</body>");
+	// if (debug){
+	// 	for (var i=0;i<jsFiles.length;i++){
+	// 		var f = typeof jsFiles[i]=="object" ? jsFiles[i].src : jsFiles[i];
+	// 		js += getScriptTag("/src/" + f) + "\n";
+	// 	}
+	// }
+	// else{
+	// 	js += getScriptTag("js/main.min.js");
+	// }
+	// index = index.replace("</body>",js + "</body>");
 	var path = opts.outputPath + "/index.html";
 	fs.writeFileSync(path, index);
 	console.log("Build " +path);
