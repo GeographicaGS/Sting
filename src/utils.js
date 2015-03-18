@@ -10,22 +10,38 @@ function combineFiles (files) {
 }
 exports.combineFiles = combineFiles;
 
-function getFiles(deps) {
+function getFiles(deps,compiled) {
+
+	// deal with default values
+	compiled = compiled!==true && compiled!==false ? false: compiled;
+	
 	var files = [];
 
-	for (var i in deps.src) {
-		files.push(deps.src[i]);
+	for (var i in deps) {
+		if (typeof deps[i] === "object"){
+			// It's an object, it could be compiled or not
+			if (compiled == deps[i].compiled){
+				files.push(deps[i].src);
+			}
+		}
+		else if (typeof deps[i] === "string" && !compiled){
+			// if no object dep is compiled
+			files.push(deps[i]);
+		}
 	}
 
 	return files;
 };
-exports.getFiles = getFiles;
 
-function getJSThirpartyCombined(deps){
-    var filesThirdParty = getFiles(deps.JS.ThirdParty);
-    return combineFiles(filesThirdParty)
+function getFilesCompiled(deps) {
+	return getFiles(deps,true);
 };
-exports.getJSThirpartyCombined = getJSThirpartyCombined;
+function getFilesNonCompiled(deps) {
+	return getFiles(deps,false);
+};
+
+exports.getFilesNonCompiled = getFilesNonCompiled;
+exports.getFilesCompiled = getFilesCompiled;
 
 function loadSilently(path) {
 	try {

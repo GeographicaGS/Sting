@@ -1,11 +1,11 @@
-WWW-Builder
+Sting
 ===========
 
 #About 
 
-WWW-Builder is a multilanguage builder for Web Applicactions.
+Sting is a multilanguage builder for Backbone Applicactions. 
 
-Input : A bunch of underscore templates, JS files and CSS files.
+Input : A bunch of underscore templates, JS files and CSS/LESS files.
 
 Output:  
 
@@ -20,23 +20,36 @@ Output:
 		js/main.min.js
 ```
 
-# Dependecies
-
-This builder uses node-js and several modules. 
+# Install
 
 Install Node js and run:
 
 ```
-sudo npm install -g uglifyjs
-sudo npm install -g uglifycss
-sudo npm install -g jshint
-sudo npm install -g pg
-sudo npm install -g less
-# necesario para el builder-watcher 
-sudo npm install -g node-watch
-
-export NODE_PATH=/usr/local/lib/node_modules
+npm install 
 ```
+
+# Getting started
+```
+var sting = require("../src/sting.js"),
+    deps = require("./deps.js").deps;
+
+var debug = (process.argv.length == 3 && process.argv[2]=="debug") ? true : false;
+    
+sting.make({
+    "debug" : debug,
+    "deps" : deps,
+    "outputPath" : "../www",
+    // Languages
+    "langs" : ["es","en","fr"],
+    //"langs" : null ,
+    "localesPath" : "../locales"
+});
+
+```
+
+For more info check the samples folder.
+
+We need to improve the doc and the samples, in the meantime, if you want more information email us at developers@geographica.gs
 
 
 
