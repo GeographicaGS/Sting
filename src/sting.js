@@ -57,19 +57,20 @@ function make(opts){
 	if (!opts.langs){
 		utils.createDirIfNotExist(opts.outputPath );	
 		utils.createFileIfNotExist(opts.outputPath + "/.htaccess",htaccess);
+		utils.createDirIfNotExist(opts.outputPath + "/js");
 
 
 		build.buildJS({
 			"files": opts.deps.JS,
 			"lang": null,
-			"outputPath" : opts.outputPath
+			"outputPath" : opts.outputPath + "/js"
 		});
 
 		build.buildHTML({
-			"templateFolder": deps.templateFolder,
+			"templateFolder": opts.deps.templateFolder,
 			"jsFiles" :  opts.deps.JS,
 			"lang": null,
-			"outputPath" : opts.outputPath + "/" + opts.langs[i],
+			"outputPath" : opts.outputPath,
 			"debug" : debug
 		});
 	}
@@ -83,6 +84,7 @@ function make(opts){
 
 		for (var i=0;i< opts.langs.length;i++){
 			utils.createDirIfNotExist(opts.outputPath +"/"+ opts.langs[i]);	
+			utils.createDirIfNotExist(opts.outputPath +"/"+ opts.langs[i] + "/js");	
 			utils.createFileIfNotExist(opts.outputPath +"/"+ opts.langs[i] + "/.htaccess",htaccess);
 
 			console.log("\n--------------------");
@@ -93,7 +95,7 @@ function make(opts){
 				"files": opts.deps.JS,
 				"i18n" : i18n,
 				"lang": opts.langs[i],
-				"outputPath" : opts.outputPath + "/" + opts.langs[i]
+				"outputPath" : opts.outputPath + "/" + opts.langs[i] + "/js"
 			});
 
 			console.log("\n--------------------");

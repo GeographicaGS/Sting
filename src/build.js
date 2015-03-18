@@ -166,57 +166,12 @@ function getScriptTag(file){
 	return "<script type='text/javascript' src='" + file + "'></script>";	
 }
 
-function generateIndex(version,deps,cdnPath,lang,templates,debug){
-	
-	var	tmp = utils.getTmpFolder(),
-		index = fs.readFileSync(tmp +"/index-"+lang + ".html", "utf8");
-	
-	index = index.replace("<body>","<body>" + templates);
-	index = index.replace("main.min.css","main.min.css?"+version);
-	
-	if (!debug) {
-		index = index.replace("</body>",getScriptTag("/" + lang +"/js/main.min.js?" + version) + "</body>").replace(/\n/g,"");
-	}
-	else{
-		var jsThird = deps.JS.ThirdParty.src;
-			jsCore =  deps.JS.Core.src;
-		
-		var js = "";
-		
-		for (i in jsThird) {
-			js += getScriptTag("/src/" + jsThird[i] + "?" + version) +"\n\n";
-		}
-		
-		for (i in jsCore) {
-			js += getScriptTag("/src/" + jsCore[i] +"?" + version) + "\n\n";
-		}
-		
-		index = index.replace("</body>",js + "</body>");
-	}
-
-	var jsVersion = "<script type='text/javascript'>app.version='"+ version+"'</script>";
-    index = index.replace("</body>",jsVersion + "</body>");
-   
-	var newPath = cdnPath + "/" + lang + "/index.html",
-		oldStream = utils.loadSilently(newPath)
-    
-	if (oldStream != index) {
-		// index has been modified
-		fs.writeFileSync(newPath, index);
-		console.log("\tSaved "+ newPath);
-	}
-	else{
-		// index has not been modified
-		console.log("\t"+newPath + " (unchanged)");
-	}
-	
-};
-
 exports.buildHTML = function (opts){
 
 	var templateFiles = getTemplateFiles(opts.templateFolder),
 		jsFiles = opts.jsFiles,
 		lang = opts.lang,
+		debug = opts.debug,
 		templateString = combineFilesTemplate(templateFiles);
 
 	if (lang){
@@ -225,21 +180,27 @@ exports.buildHTML = function (opts){
 	}
 
 	// Small compression remove \t\n
-	templateString = templateString.replace(/\n/g,"");
-	templateString = templateString.replace(/\t/g,"");
+	if (!opts.debug){
+		templateString = templateString.replace(/\n/g,"");
+		templateString = templateString.replace(/\t/g,"");	
+	}
 
 	var index = fs.readFileSync(opts.templateFolder +"/index.html", "utf8");
 
 	index = index.replace("<body>","<body>" + templateString);
-
+	
 	var js = "";
 
-	var jsPathPrefix = opts.debug ? "/src" : lang + "/";
-
-	for (var i=0;i<jsFiles.length;i++){
-		var f = typeof jsFiles[i]=="object" ? jsFiles[i].src : jsFiles[i];
-		js += getScriptTag(jsPathPrefix + f);
+	if (debug){
+		for (var i=0;i<jsFiles.length;i++){
+			var f = typeof jsFiles[i]=="object" ? jsFiles[i].src : jsFiles[i];
+			js += getScriptTag("/src" + f);
+		}
 	}
+	else{
+		js += getScriptTag("js/main.min.js");
+	}
+
 	
 	index = index.replace("</body>",js + "</body>");
 	var path = opts.outputPath + "/index.html";
