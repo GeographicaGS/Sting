@@ -43,22 +43,15 @@ function make(opts){
 					"RewriteCond %{REQUEST_URI} !index\n" +
 					"RewriteRule (.*) index.html [L]\n";	
 
-	console.log("--------------------");
-	console.log("Building styles");
-	console.log("--------------------");
-
-	build.buildCSS({
-		"files": opts.deps.CSS,
-		"outputPath" : opts.outputPath + "/css"
-	});
-
-	build.buildJS({
-		"files": opts.deps.JS,
-		"outputPath" : opts.outputPath + "/js",
-		"outSourceMap" :  opts.outSourceMap
-	});
-
 	var debug = opts && opts.debug===true ? true : false;
+
+	if (!debug){
+		build.buildJS({
+			"files": opts.deps.JS,
+			"outputPath" : opts.outputPath + "/js",
+			"outSourceMap" :  opts.outSourceMap
+		});	
+	}
 
 	if (!opts.langs){
 		utils.createDirIfNotExist(opts.outputPath );	
@@ -99,7 +92,15 @@ function make(opts){
 		}
 	}
 
-	console.log("Build process complete successfully");
+	build.buildLESS({
+		"inputfile": opts.deps.lessFile,
+		"outputfile" : opts.outputPath + "/css/styles.min.css",
+		next: function(){
+			console.log("Build process complete successfully");
+		}
+	});
+
+	
 }
 
 exports.make = make;
