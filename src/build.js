@@ -180,7 +180,22 @@ exports.buildLESS = function (opts){
 	        
 	    },
 	    function(error) {
-	    	console.log(error.message);
+	    	var msg = "";
+
+	    	if (error.message){
+	    		msg += error.message;
+	    	}
+	    	if (error.filename){
+	    		msg += ' [ File: ' + error.filename + ']';
+	    	}
+	    	if (error.line){
+	    		msg += ' [ Line: ' + error.line + ']';
+	    	}
+	    	if (error.column){
+	    		msg += ' [ Col: ' + error.column + ']';
+	    	}
+	    	console.log(msg);
+
 	    });
 
 }
