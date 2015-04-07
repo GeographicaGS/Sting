@@ -158,12 +158,14 @@ exports.buildLESS = function (opts){
 	console.log("Input file: "+ inputfile);
 
 	var LessPluginCleanCSS = require('less-plugin-clean-css'),
-    	cleanCSSPlugin = new LessPluginCleanCSS({advanced: true});
+    	cleanCSSPlugin = new LessPluginCleanCSS({advanced: true}),
+    	LessPluginAutoPrefix = require('less-plugin-autoprefix'),
+    	autoprefixPlugin = new LessPluginAutoPrefix({browsers: ["last 2 versions"]});
 
  	less.render(fileSrc, {
 			//compress: true,
 			'paths': ['./css'],
-			'plugins': [cleanCSSPlugin]
+			'plugins': [cleanCSSPlugin,autoprefixPlugin]
 			
  		})
 	    .then(function(output) {
