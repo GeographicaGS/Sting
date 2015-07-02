@@ -257,7 +257,7 @@ exports.buildHTML = function (opts){
 		}
 	}
 	else{
-		js += getScriptTag((lang ? "../" : "") + "js/main.min.js");
+		js += getScriptTag("/js/main.min.js");
 	}
 
 	index = index.replace("</body>",js + "</body>");
