@@ -210,7 +210,7 @@ function getTemplateFiles(tplFolder) {
 		
 		for (var i=0;i<files.length;i++) {
 			
-			if (files[i] != "index.html") {
+			if (["index.html",".DS_Store"].indexOf(files[i])==-1) {
 				response.push(dirPath + "/" + files[i]);
 			}
 		}
