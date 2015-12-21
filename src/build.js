@@ -4,13 +4,21 @@ var fs = require('fs'),
 	UglifyCSS = require('uglifycss'),       
 	utils = require("./utils.js");
 
-function combineFilesTemplate(files) {
+function combineFilesTemplate(files,templateFolders) {
 	var content = '';
 	for (var i = 0, len = files.length; i < len; i++) {
-		var id = files[i].slice(0,-5).replace("js/template/","").replace(/\//g,"-");
+
+		var f = files[i].slice(0,-5);
 		
-		content += "<script type='text/template' id='"+ id +"'>\n" + fs.readFileSync(files[i], 'utf8') +"</script>\n\n";		
+		for (var f2 in templateFolders){
+			f = f.replace(templateFolders[f2]+"/","");	
+		}
+		
+		f = f.replace(/\//g,"-");
+		
+		content += "<script type='text/template' id='"+ f +"'>\n" + fs.readFileSync(files[i], 'utf8') +"</script>\n\n";		
 	}
+	
 	return content;
 }
 
@@ -52,80 +60,10 @@ exports.buildJS = function (opts) {
 		fs.writeFileSync(path, result.map);
 	}
 
-
-
 	console.log("Building javascript code completed successfully");
 
 };
 
-// exports.buildCSS = function (opts){
-
-// 	var files = opts.files,
-// 		targetStr = "",
-// 		less = require('less'),
-// 		parser = new(less.Parser);
-	
-// 	for (var i=0;i<files.length;i++){
-// 		var fileCompiled;
-// 		if (typeof files[i] === "object"){
-
-// 			if (!files[i].hasOwnProperty("src")){
-// 				throw("Not found src for "+ files[i]);
-// 			}
-
-// 			fileSrc = files[i].src;
-// 		}
-
-// 		else{
-// 			fileSrc = files[i];
-// 		}
-
-// 		if (typeof files[i] === "object" && files[i].compiled==true){
-// 			console.log("Attaching file " + fileSrc);
-// 			// not compile this file
-// 			fileCompiled = utils.loadSilently(fileSrc);
-// 		}
-// 		else{
-// 			console.log("Compiling file " + fileSrc);
-// 			var newSrc = utils.loadSilently(fileSrc),
-// 				path = require('path'),
-// 				extension = path.extname(fileSrc);
-
-// 			if (extension == ".less"){
-// 				less.render(newSrc,
-// 					{
-// 						compress: true,
-// 						paths: ['./css', './lib']
-// 					}, function (e, output) {
-
-// 						if (e){
-// 							console.error("Error found at line: " + e.line + ", column: " + e.column);
-// 							console.error("Error says: " + e.message);
-// 							throw ("Error building "+ fileSrc);
-// 						}
-// 						fileCompiled = output.css;
-// 						console.log("hola");
-// 				});	
-// 			}
-// 			else if (extension == ".css") {
-// 				fileCompiled = UglifyCSS.processString( 
-// 					newSrc, {
-// 					maxLineLen : 500,
-// 					expandVars : true 
-// 				});
-// 			}
-// 			// else ... Maybe support for Sass in the future 
-// 		}
-// 		console.log("hola2");
-		
-// 		targetStr += fileCompiled;
-// 	}
-
-// 	var fpath = opts.outputPath + "/styles.min.css";
-// 	console.log("Build successfully styles.min.css");
-// 	fs.writeFileSync(fpath, targetStr);
-	
-// }
 
 exports.buildLESS = function (opts){
 
@@ -206,19 +144,20 @@ function getTemplateFiles(tplFolder) {
 	var file = require("file");
 	response = [];
 
-	file.walkSync(tplFolder, function(dirPath, dirs, files){
-		
-		for (var i=0;i<files.length;i++) {
-			
-			if (["index.html",".DS_Store"].indexOf(files[i])==-1) {
-				response.push(dirPath + "/" + files[i]);
+	for (var f in tplFolder){
+
+		file.walkSync(tplFolder[f], function(dirPath, dirs, files){
+			for (var i=0;i<files.length;i++) {
+				if (["index.html",".DS_Store"].indexOf(files[i])==-1) {
+					response.push(dirPath + "/" + files[i]);
+				}
 			}
-		}
-	});
+		});
+	
+	}
 
 	return response;
 }
-
 
 function getScriptTag(file){
 	return "<script type='text/javascript' src='" + file + "'></script>";	
@@ -230,8 +169,8 @@ exports.buildHTML = function (opts){
 		jsFiles = opts.jsFiles,
 		lang = opts.lang,
 		debug = opts.debug,
-		templateString = combineFilesTemplate(templateFiles);
-		index = fs.readFileSync(opts.templateFolder +"/index.html", "utf8");
+		templateString = combineFilesTemplate(templateFiles,opts.templateFolder);
+		index = fs.readFileSync(opts.templateFolder[0] +"/index.html", "utf8");
 
 	if (lang){
 		var translate = require("./translate.js")(opts.i18n);

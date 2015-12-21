@@ -23,8 +23,13 @@ function make(opts){
 		return;
 	}
 
-	if (opts.deps.templateFolder.substr(opts.deps.templateFolder.length - 1) != "/"){
-		opts.deps.templateFolder += "/";
+	if (typeof opts.templateFolder == "string"){
+		opts.templateFolder = [opts.templateFolder];
+		for(var i in opts.templateFolder){
+			if (opts.deps.templateFolder[i].substr(opts.deps.templateFolder[i].length - 1) != "/"){
+				opts.deps.templateFolder[i] += "/";
+			}
+		}
 	}
 
 	// let's create tmp folder
@@ -96,10 +101,39 @@ function make(opts){
 		"inputfile": opts.deps.lessFile,
 		"outputfile" : opts.outputPath + "/css/styles.min.css",
 		next: function(){
-			console.log("Build process complete successfully");
+			extraResources(opts);
 		}
 	});
 
+	
+}
+
+function extraResources(opts){
+
+	var error = 0;
+	if (opts.extraResources){
+
+		var fs = require('fs-extra');
+		var counter = opts.extraResources.length;
+
+		for (var i in opts.extraResources){
+			var f = opts.extraResources[i];
+			
+			if (!opts.debug || !f.onDebugIgnore){
+				
+				try{
+					fs.copySync(f.srcFolder, opts.outputPath + "/" + f.dstFolder);
+				} 
+				catch (err) {
+					error++;
+				  console.error(err.message)
+				}
+			}
+		}
+
+	}
+	if (!error)
+		console.log("Build process completed");
 	
 }
 

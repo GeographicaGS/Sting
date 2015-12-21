@@ -4,15 +4,16 @@
   "description": "Sting is a multilanguage builder for Backbone Applicactions.",
   "main": "src/sting.js",
   "dependencies": {
-    "jshint": "^2.6.3",
     "file": "^0.2.2",
+    "fs-extra": "^0.26.3",
     "i18n": "^0.5.0",
+    "jshint": "^2.6.3",
     "less": "^2.4.0",
-    "uglify-js": "^2.4.17",
-    "uglifycss": "^0.0.13",
-    "node-watch": "^0.3.4",
+    "less-plugin-autoprefix": "^1.4.1",
     "less-plugin-clean-css": "^1.5.0",
-    "less-plugin-autoprefix": "^1.4.1"
+    "node-watch": "^0.3.4",
+    "uglify-js": "^2.4.17",
+    "uglifycss": "^0.0.13"
   },
   "devDependencies": {},
   "scripts": {
