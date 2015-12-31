@@ -35,6 +35,10 @@ function make(opts){
 	// let's create tmp folder
 	utils.createDirIfNotExist("build");
 
+	if (opts.relativePath){
+		opts.outputPath = opts.outputPath + opts.relativePath;
+	}
+
 	// Let's create the cdn folder if not exists
 	utils.createDirIfNotExist(opts.outputPath);
 	utils.createDirIfNotExist(opts.outputPath + "/img");
@@ -61,13 +65,13 @@ function make(opts){
 	if (!opts.langs){
 		utils.createDirIfNotExist(opts.outputPath );	
 		utils.createFileIfNotExist(opts.outputPath + "/.htaccess",htaccess);
-
 		build.buildHTML({
 			"templateFolder": opts.deps.templateFolder,
 			"jsFiles" :  opts.deps.JS,
 			"lang": null,
 			"outputPath" : opts.outputPath,
-			"debug" : debug
+			"debug" : debug,
+			"relativePath" : opts.relativePath
 		});
 	}
 	else{
@@ -92,7 +96,8 @@ function make(opts){
 				"i18n" : i18n,
 				"lang": opts.langs[i],
 				"outputPath" : opts.outputPath + "/" + opts.langs[i],
-				"debug" : debug
+				"debug" : debug,
+				"relativePath" : opts.relativePath
 			});
 		}
 	}

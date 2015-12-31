@@ -192,11 +192,15 @@ exports.buildHTML = function (opts){
 	if (debug){
 		for (var i=0;i<jsFiles.length;i++){
 			//var f = typeof jsFiles[i]=="object" ? jsFiles[i].src : jsFiles[i];
-			js += getScriptTag("/src/" + jsFiles[i]) + "\n";
+			var prefix = opts.relativePath ? opts.relativePath : '';
+			js += getScriptTag(prefix + "/src/" + jsFiles[i]) + "\n";
 		}
 	}
 	else{
-		js += getScriptTag("/js/main.min.js");
+
+		var prefix = opts.relativePath ? opts.relativePath : '';
+		
+		js += getScriptTag(prefix + "/js/main.min.js");
 	}
 
 	index = index.replace("</body>",js + "</body>");
