@@ -7,7 +7,7 @@ function make(opts){
 		console.log("Error no options");
 		return;
 	}
-	
+
 	if (!opts.outputPath){
 		console.log("Error no outputPath specified");
 		return;
@@ -50,7 +50,7 @@ function make(opts){
 					"RewriteCond %{REQUEST_FILENAME} !-f\n" +
 					"RewriteCond %{REQUEST_FILENAME} !-d\n" +
 					"RewriteCond %{REQUEST_URI} !index\n" +
-					"RewriteRule (.*) index.html [L]\n";	
+					"RewriteRule (.*) index.html [L]\n";
 
 	var debug = opts && opts.debug===true ? true : false;
 
@@ -59,11 +59,11 @@ function make(opts){
 			"files": opts.deps.JS,
 			"outputPath" : opts.outputPath + "/js",
 			"outSourceMap" :  opts.outSourceMap
-		});	
+		});
 	}
 
 	if (!opts.langs){
-		utils.createDirIfNotExist(opts.outputPath );	
+		utils.createDirIfNotExist(opts.outputPath );
 		utils.createFileIfNotExist(opts.outputPath + "/.htaccess",htaccess);
 		build.buildHTML({
 			"templateFolder": opts.deps.templateFolder,
@@ -71,7 +71,8 @@ function make(opts){
 			"lang": null,
 			"outputPath" : opts.outputPath,
 			"debug" : debug,
-			"relativePath" : opts.relativePath
+			"relativePath" : opts.relativePath,
+			"config": opts.deps.config
 		});
 	}
 	else{
@@ -83,7 +84,7 @@ function make(opts){
 		});
 
 		for (var i=0;i< opts.langs.length;i++){
-			utils.createDirIfNotExist(opts.outputPath +"/"+ opts.langs[i]);	
+			utils.createDirIfNotExist(opts.outputPath +"/"+ opts.langs[i]);
 			utils.createFileIfNotExist(opts.outputPath +"/"+ opts.langs[i] + "/.htaccess",htaccess);
 
 			console.log("\n--------------------");
@@ -97,7 +98,8 @@ function make(opts){
 				"lang": opts.langs[i],
 				"outputPath" : opts.outputPath + "/" + opts.langs[i],
 				"debug" : debug,
-				"relativePath" : opts.relativePath
+				"relativePath" : opts.relativePath,
+				"config": opts.deps.config
 			});
 		}
 	}
@@ -110,7 +112,7 @@ function make(opts){
 		}
 	});
 
-	
+
 }
 
 function extraResources(opts){
@@ -123,12 +125,12 @@ function extraResources(opts){
 
 		for (var i in opts.extraResources){
 			var f = opts.extraResources[i];
-			
+
 			if (!opts.debug || !f.onDebugIgnore){
-				
+
 				try{
 					fs.copySync(f.srcFolder, opts.outputPath + "/" + f.dstFolder);
-				} 
+				}
 				catch (err) {
 					error++;
 				  console.error(err.message)
@@ -139,8 +141,7 @@ function extraResources(opts){
 	}
 	if (!error)
 		console.log("Build process completed");
-	
+
 }
 
 exports.make = make;
-

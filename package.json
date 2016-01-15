@@ -4,6 +4,7 @@
   "description": "Sting is a multilanguage builder for Backbone Applicactions.",
   "main": "src/sting.js",
   "dependencies": {
+    "dotenv": "^1.2.0",
     "file": "^0.2.2",
     "fs-extra": "^0.26.3",
     "i18n": "^0.5.0",

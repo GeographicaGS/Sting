@@ -1,7 +1,7 @@
 var fs = require('fs'),
     jshint = require('jshint'),
     UglifyJS = require('uglify-js'),
-	UglifyCSS = require('uglifycss'),       
+	UglifyCSS = require('uglifycss'),
 	utils = require("./utils.js");
 
 function combineFilesTemplate(files,templateFolders) {
@@ -9,16 +9,16 @@ function combineFilesTemplate(files,templateFolders) {
 	for (var i = 0, len = files.length; i < len; i++) {
 
 		var f = files[i].slice(0,-5);
-		
+
 		for (var f2 in templateFolders){
-			f = f.replace(templateFolders[f2]+"/","");	
+			f = f.replace(templateFolders[f2]+"/","");
 		}
-		
+
 		f = f.replace(/\//g,"-");
-		
-		content += "<script type='text/template' id='"+ f +"'>\n" + fs.readFileSync(files[i], 'utf8') +"</script>\n\n";		
+
+		content += "<script type='text/template' id='"+ f +"'>\n" + fs.readFileSync(files[i], 'utf8') +"</script>\n\n";
 	}
-	
+
 	return content;
 }
 
@@ -87,7 +87,7 @@ exports.buildLESS = function (opts){
 	//     error: function(msg) {
 	//     	console.log(msg);
 	//     }
-	// });	
+	// });
 
  	console.log("-------");
 	console.log("Building styles");
@@ -104,7 +104,7 @@ exports.buildLESS = function (opts){
 			//compress: true,
 			'paths': ['./css'],
 			'plugins': [cleanCSSPlugin,autoprefixPlugin]
-			
+
  		})
 	    .then(function(output) {
 	    	console.log("Writing render result to "+ outputfile);
@@ -115,9 +115,9 @@ exports.buildLESS = function (opts){
 	        // output.map = string of sourcemap
 	        // output.imports = array of string filenames of the imports referenced
 	        if (next){
-	        	next();	
+	        	next();
 	        }
-	        
+
 	    },
 	    function(error) {
 	    	var msg = "";
@@ -153,14 +153,41 @@ function getTemplateFiles(tplFolder) {
 				}
 			}
 		});
-	
+
 	}
 
 	return response;
 }
 
+function getConfigFiles(inputFile) {
+  var fileSrc = utils.loadSilently(inputFile);
+  var replpat = /(@{)([A-Za-z0-9]+)(})/g;
+  var match = fileSrc.match(replpat);
+
+  if(match){
+  var envpat = /[A-Za-z0-9]+/;
+    match.forEach(function(el){
+      var envvarname = envpat.exec(el);
+      var envvar = process.env[envvarname] || '';
+      fileSrc = fileSrc.replace(el,envvar);
+    });
+  }
+	return fileSrc;
+}
+
+function loadEnvVarsFile(inputFile) {
+  var fileSrc = utils.loadSilently(inputFile);
+	var pattern = /([A-Za-z0-9\-/@\()\!\._])+=[ ]*([A-Za-z0-9\-/@\()\!\._])+/g;
+	var match = fileSrc.match(pattern);
+	var pattern2 = /([A-Za-z0-9\-/@\()\!\._]+)=[ ]*([A-Za-z0-9\-/@\()\!\._]+)/;
+	match.forEach(function(el){
+		var data = pattern2.exec(el);
+		process.env[data[1]] = data[2];
+	});
+}
+
 function getScriptTag(file){
-	return "<script type='text/javascript' src='" + file + "'></script>";	
+	return "<script type='text/javascript' src='" + file + "'></script>";
 }
 
 exports.buildHTML = function (opts){
@@ -181,12 +208,16 @@ exports.buildHTML = function (opts){
 	// Small compression remove \t\n
 	if (!opts.debug){
 		templateString = templateString.replace(/\n/g,"");
-		templateString = templateString.replace(/\t/g,"");	
+		templateString = templateString.replace(/\t/g,"");
 	}
-	
 
 	index = index.replace("</body>", templateString + "</body>" );
-	
+
+  if(opts.config){
+    var config = getConfigFiles(opts.config);
+    index = index.replace("</body>", "<script type='text/javascript'>\n" + config + "\n</script>\n</body>");
+  }
+
 	var js = "";
 
 	if (debug){
@@ -199,7 +230,7 @@ exports.buildHTML = function (opts){
 	else{
 
 		var prefix = opts.relativePath ? opts.relativePath : '';
-		
+
 		js += getScriptTag(prefix + "/js/main.min.js");
 	}
 
