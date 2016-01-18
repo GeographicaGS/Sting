@@ -161,11 +161,11 @@ function getTemplateFiles(tplFolder) {
 
 function getConfigFiles(inputFile) {
   var fileSrc = utils.loadSilently(inputFile);
-  var replpat = /(@{)([A-Za-z0-9]+)(})/g;
+  var replpat = /(@{)([A-Za-z0-9\-_]+)(})/g;
   var match = fileSrc.match(replpat);
 
   if(match){
-    var envpat = /[A-Za-z0-9]+/;
+    var envpat = /[A-Za-z0-9\-_]+/;
     match.forEach(function(el){
       var envvarname = envpat.exec(el);
       var envvar = process.env[envvarname] || '';
