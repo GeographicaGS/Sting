@@ -165,7 +165,7 @@ function getConfigFiles(inputFile) {
   var match = fileSrc.match(replpat);
 
   if(match){
-  var envpat = /[A-Za-z0-9]+/;
+    var envpat = /[A-Za-z0-9]+/;
     match.forEach(function(el){
       var envvarname = envpat.exec(el);
       var envvar = process.env[envvarname] || '';
@@ -212,6 +212,10 @@ exports.buildHTML = function (opts){
 	}
 
 	index = index.replace("</body>", templateString + "</body>" );
+
+  if(opts.envFile){
+    loadEnvVarsFile(opts.envFile);
+  }
 
   if(opts.config){
     var config = getConfigFiles(opts.config);

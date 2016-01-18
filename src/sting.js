@@ -72,6 +72,7 @@ function make(opts){
 			"outputPath" : opts.outputPath,
 			"debug" : debug,
 			"relativePath" : opts.relativePath,
+			"envFile": opts.deps.envFile,
 			"config": opts.deps.config
 		});
 	}
@@ -99,6 +100,7 @@ function make(opts){
 				"outputPath" : opts.outputPath + "/" + opts.langs[i],
 				"debug" : debug,
 				"relativePath" : opts.relativePath,
+				"envFile": opts.deps.envFile,
 				"config": opts.deps.config
 			});
 		}
