@@ -177,9 +177,9 @@ function getConfigFiles(inputFile) {
 
 function loadEnvVarsFile(inputFile) {
   var fileSrc = utils.loadSilently(inputFile);
-	var pattern = /([A-Za-z0-9\-/@\()\!\._])+=[ ]*([A-Za-z0-9\-/@\()\!\._])+/g;
+	var pattern = /([A-Za-z0-9\-/@\()\!\.\:_])+=[ ]*([A-Za-z0-9\-/@\()\!\.\:_])+/g;
 	var match = fileSrc.match(pattern);
-	var pattern2 = /([A-Za-z0-9\-/@\()\!\._]+)=[ ]*([A-Za-z0-9\-/@\()\!\._]+)/;
+	var pattern2 = /([A-Za-z0-9\-/@\()\!\.\:_]+)=[ ]*([A-Za-z0-9\-/@\()\!\.\:_]+)/;
 	match.forEach(function(el){
 		var data = pattern2.exec(el);
 		process.env[data[1]] = data[2];
