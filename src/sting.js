@@ -23,9 +23,9 @@ function make(opts){
 		return;
 	}
 
-	if (typeof opts.templateFolder == "string"){
-		opts.templateFolder = [opts.templateFolder];
-		for(var i in opts.templateFolder){
+	if (typeof opts.deps.templateFolder == "string"){
+		opts.deps.templateFolder = [opts.deps.templateFolder];
+		for(var i in opts.deps.templateFolder){
 			if (opts.deps.templateFolder[i].substr(opts.deps.templateFolder[i].length - 1) != "/"){
 				opts.deps.templateFolder[i] += "/";
 			}
