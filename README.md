@@ -22,28 +22,27 @@ Output:
 
 # Install
 
-Install Node js and run:
-
 ```
-npm install 
+npm install sting-builder
 ```
 
 # Getting started
 ```
-var sting = require("../src/sting.js"),
-    deps = require("./deps.js").deps;
+var sting = require('sting-builder'),
+    deps = require('./deps.js').deps;
 
-var debug = (process.argv.length == 3 && process.argv[2]=="debug") ? true : false;
+var debug = (process.argv.length == 3 && process.argv[2]=='debug') ? true : false;
     
 sting.make({
-    "debug" : debug,
-    "deps" : deps,
-    "outputPath" : "../www",
-    // Languages
-    "langs" : ["es","en","fr"],
-    //"langs" : null ,
-    "localesPath" : "../locales"
+  'debug' : debug,
+  'deps' : deps,
+  'outputPath' : '/usr/share/nginx/html',
+  // Languages
+  'langs' : [],    
+  'outSourceMap' :  debug ? 'main.min.map' : null
 });
+
+
 
 ```
 

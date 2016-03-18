@@ -144,6 +144,10 @@ function extraResources(opts){
 	if (!error)
 		console.log("Build process completed");
 
+	// Clean build folder
+	utils.deleteBuildFolder();
+
+
 }
 
 exports.make = make;

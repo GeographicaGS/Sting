@@ -1,6 +1,6 @@
 {
-  "name": "Sting",
-  "version": "1.0.1",
+  "name": "sting-builder",
+  "version": "1.0.2",
   "description": "Sting is a multilanguage builder for Backbone Applicactions.",
   "main": "src/sting.js",
   "dependencies": {
