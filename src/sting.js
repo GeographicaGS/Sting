@@ -73,7 +73,8 @@ function make(opts){
 			"debug" : debug,
 			"relativePath" : opts.relativePath,
 			"envFile": opts.deps.envFile,
-			"config": opts.deps.config
+			"config": opts.deps.config,
+      "compress": opts.compressHTML
 		});
 	}
 	else{
@@ -101,7 +102,8 @@ function make(opts){
 				"debug" : debug,
 				"relativePath" : opts.relativePath,
 				"envFile": opts.deps.envFile,
-				"config": opts.deps.config
+				"config": opts.deps.config,
+        "compress": opts.compressHTML
 			});
 		}
 	}

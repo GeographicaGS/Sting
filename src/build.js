@@ -102,7 +102,7 @@ exports.buildLESS = function (opts){
 
  	less.render(fileSrc, {
 			//compress: true,
-			'paths': ['./css'],
+			'paths': ['./css','.','./src'],
 			'plugins': [cleanCSSPlugin,autoprefixPlugin]
 
  		})
@@ -196,6 +196,7 @@ exports.buildHTML = function (opts){
 		jsFiles = opts.jsFiles,
 		lang = opts.lang,
 		debug = opts.debug,
+    compress = opts.compress===false ? false: true,
 		templateString = combineFilesTemplate(templateFiles,opts.templateFolder);
 		index = fs.readFileSync(opts.templateFolder[0] +"/index.html", "utf8");
 
@@ -206,7 +207,7 @@ exports.buildHTML = function (opts){
 	}
 
 	// Small compression remove \t\n
-	if (!opts.debug){
+	if (compress){
 		templateString = templateString.replace(/\n/g,"");
 		templateString = templateString.replace(/\t/g,"");
 	}
