@@ -1,6 +1,6 @@
 {
   "name": "sting-builder",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Sting is a multilanguage builder for Backbone Applicactions.",
   "main": "src/sting.js",
   "dependencies": {
@@ -23,7 +23,7 @@
     "type": "git",
     "url": "https://github.com/GeographicaGS/Sting"
   },
-  "author": "alberto.asuero@eographica.gs",
+  "author": "alberto.asuero@geographica.gs",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/GeographicaGS/Sting/issues"
