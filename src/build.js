@@ -1,6 +1,5 @@
 var fs = require('fs'),
     jshint = require('jshint'),
-    UglifyJS = require('uglify-js'),
 	UglifyCSS = require('uglifycss'),
 	utils = require("./utils.js"),
   babel = require("babel-core");;
@@ -59,13 +58,7 @@ exports.buildJS = function (opts) {
         }
       }]
     ],*/
-    "presets": [
-      ["env", {
-        "targets": {
-          "chrome": 52
-        }
-      }]
-    ],
+    "presets": ["env"],
     "env": {
       "production": {
         "presets": ["babili"]
