@@ -1,9 +1,10 @@
 {
   "name": "Sting",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Sting is a multilanguage builder for Backbone Applicactions.",
   "main": "src/sting.js",
   "dependencies": {
+    "babel-core": "^6.21.0",
     "file": "^0.2.2",
     "fs-extra": "^0.26.3",
     "i18n": "^0.5.0",
@@ -12,7 +13,6 @@
     "less-plugin-autoprefix": "^1.4.1",
     "less-plugin-clean-css": "^1.5.0",
     "node-watch": "^0.3.4",
-    "uglify-js": "^2.4.17",
     "uglifycss": "^0.0.13"
   },
   "devDependencies": {},
@@ -23,7 +23,7 @@
     "type": "git",
     "url": "https://github.com/GeographicaGS/Sting"
   },
-  "author": "alberto.asuero@eographica.gs",
+  "author": "alberto.asuero@geographica.gs",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/GeographicaGS/Sting/issues"
