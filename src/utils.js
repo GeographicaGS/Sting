@@ -63,7 +63,13 @@ function getTmpFolder()
 {
 	return tmp;
 }
+
 exports.getTmpFolder = getTmpFolder;
 
-
 exports.tmp = tmp;
+
+exports.deleteBuildFolder = function(){
+	if (fs.existsSync('build')) {
+		fs.rmdirSync('build')
+	} 
+}

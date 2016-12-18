@@ -23,9 +23,9 @@ function make(opts){
 		return;
 	}
 
-	if (typeof opts.templateFolder == "string"){
-		opts.templateFolder = [opts.templateFolder];
-		for(var i in opts.templateFolder){
+	if (typeof opts.deps.templateFolder == "string"){
+		opts.deps.templateFolder = [opts.deps.templateFolder];
+		for(var i in opts.deps.templateFolder){
 			if (opts.deps.templateFolder[i].substr(opts.deps.templateFolder[i].length - 1) != "/"){
 				opts.deps.templateFolder[i] += "/";
 			}
@@ -73,7 +73,8 @@ function make(opts){
 			"debug" : debug,
 			"relativePath" : opts.relativePath,
 			"envFile": opts.deps.envFile,
-			"config": opts.deps.config
+			"config": opts.deps.config,
+      "compress": opts.compressHTML
 		});
 	}
 	else{
@@ -101,7 +102,8 @@ function make(opts){
 				"debug" : debug,
 				"relativePath" : opts.relativePath,
 				"envFile": opts.deps.envFile,
-				"config": opts.deps.config
+				"config": opts.deps.config,
+        "compress": opts.compressHTML
 			});
 		}
 	}
@@ -143,6 +145,10 @@ function extraResources(opts){
 	}
 	if (!error)
 		console.log("Build process completed");
+
+	// Clean build folder
+	utils.deleteBuildFolder();
+
 
 }
 
