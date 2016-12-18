@@ -1,8 +1,8 @@
 var fs = require('fs'),
     jshint = require('jshint'),
-    UglifyJS = require('uglify-js'),
 	UglifyCSS = require('uglifycss'),
-	utils = require("./utils.js");
+	utils = require("./utils.js"),
+  babel = require("babel-core");;
 
 function combineFilesTemplate(files,templateFolders) {
 	var content = '';
@@ -35,30 +35,46 @@ exports.buildJS = function (opts) {
 	var files = utils.getFiles(opts.files),
 		targetStr = "";
 
-	var localopts = {
-		"warnings" : true,
-	};
+	// var localopts = {
+	// 	"warnings" : true,
+	// };
+  //
+	// if (opts.outSourceMap){
+	// 	localopts["outSourceMap"] = opts.outSourceMap;
+	// 	localopts["sourceRoot"] = "/src";
+	// }
+  //
+	// if (opts.sourceRoot) {
+	// 	localopts["sourceRoot"] = opts.sourceRoot;
+	// }
+  process.env.BABEL_ENV='production';
 
-	if (opts.outSourceMap){
-		localopts["outSourceMap"] = opts.outSourceMap;
-		localopts["sourceRoot"] = "/src";
-	}
+  var code = utils.combineFiles(files);
+	var result = babel.transform(code, {
+    /*"presets": [
+      ["env", {
+        "targets": {
+          "chrome": 52
+        }
+      }]
+    ],*/
+    "presets": ["env"],
+    "env": {
+      "production": {
+        "presets": ["babili"]
+      }
+    }
+  });
+  ///console.log(result.code);
 
-	if (opts.sourceRoot) {
-		localopts["sourceRoot"] = opts.sourceRoot;
-	}
-
-	var result = UglifyJS.minify(files, localopts);
-
-	console.log("Writing main.min.js");
 	var path = opts.outputPath + "/main.min.js";
 	fs.writeFileSync(path, result.code);
 
-	if (opts.outSourceMap){
-		console.log("Writing " + localopts["outSourceMap"]);
-		var path = opts.outputPath + "/" + localopts["outSourceMap"];
-		fs.writeFileSync(path, result.map);
-	}
+	// if (opts.outSourceMap){
+	// 	console.log("Writing " + localopts["outSourceMap"]);
+	// 	var path = opts.outputPath + "/" + localopts["outSourceMap"];
+	// 	fs.writeFileSync(path, result.map);
+	// }
 
 	console.log("Building javascript code completed successfully");
 
