@@ -1,6 +1,8 @@
 Sting
 ===========
 
+It's a deprecated project. Plese, consider using https://github.com/GeographicaGS/genesis
+
 #About 
 
 Sting is a multilanguage builder for Backbone Applicactions. 
