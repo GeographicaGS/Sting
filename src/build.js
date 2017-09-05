@@ -84,11 +84,21 @@ exports.buildJS = function (opts) {
 exports.buildLESS = function (opts){
 
 	var less = require('less'),
- 		parser = new(less.Parser),
- 		inputfile = opts.inputfile,
- 		outputfile = opts.outputfile,
- 		next = opts.next,
- 		fileSrc = utils.loadSilently(inputfile);
+ 		parser = new(less.Parser);
+
+ 	var	inputfile,
+    outputfile = opts.outputfile,
+    next = opts.next,
+    fileSrc,
+    multipleFiles = Array.isArray(opts.inputfile);
+
+  if (multipleFiles) {
+    inputfile = opts.inputfile[0];
+  } else {
+    inputfile = opts.inputfile;
+  }
+
+  fileSrc = utils.loadSilently(inputfile);
 
  // 	less.logger.addListener({
 	//     debug: function(msg) {
@@ -115,6 +125,13 @@ exports.buildLESS = function (opts){
     	cleanCSSPlugin = new LessPluginCleanCSS({advanced: true}),
     	LessPluginAutoPrefix = require('less-plugin-autoprefix'),
     	autoprefixPlugin = new LessPluginAutoPrefix({browsers: ["last 2 versions"]});
+
+  if (multipleFiles) {
+    for(let i=1; i<opts.inputfile.length; i++){
+      console.log(`    - Adding "${opts.inputfile[i]}"`);
+      fileSrc += `\n@import "${opts.inputfile[i]}";`;
+    }
+  }
 
  	less.render(fileSrc, {
 			//compress: true,
