@@ -247,7 +247,8 @@ exports.buildHTML = function (opts){
 		templateString = combineFilesTemplate(templateFiles,opts.templateFolder);
 		index = fs.readFileSync(opts.templateFolder[0] +"/index.html", "utf8"),
 		// Check out if exist a "main-block" in load files
-		indexMainBlock = utils.getStringIndexIntoArray(jsFiles, tagMainBlock);
+		indexMainBlock = utils.getStringIndexIntoArray(jsFiles, tagMainBlock),
+		hasMainBlock = (indexMainBlock > -1);
 
 	if (lang){
 		var translate = require("./translate.js")(opts.i18n);
@@ -276,18 +277,20 @@ exports.buildHTML = function (opts){
 
 	if (debug){
 		// Remove from files the tag value tagMainBlock
-		if (indexMainBlock > -1) {
+		if (hasMainBlock) {
 			jsFiles[indexMainBlock] = jsFiles[indexMainBlock].replace(tagMainBlock, '')
 		}
 
 		for (var i=0; i < jsFiles.length; i++){
 			var prefix = opts.relativePath ? opts.relativePath : '';
-			js += getScriptTag(prefix + "/src/" + jsFiles[i], (indexMainBlock > -1 && indexMainBlock < i)) + "\n";
+			js += getScriptTag(prefix + "/src/" + jsFiles[i], (hasMainBlock && indexMainBlock < i)) + "\n";
 		}
 	} else{
 		var prefix = opts.relativePath ? opts.relativePath : '';
 		js += getScriptTag(prefix + '/js/' + mainJsFile, false);
-		js += getScriptTag(prefix + '/js/' + thirdJsFile, true);
+		if (hasMainBlock) {
+			js += getScriptTag(prefix + '/js/' + thirdJsFile, true);
+		}
 	}
 
 	index = index.replace("</body>",js + "</body>");
