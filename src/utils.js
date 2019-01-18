@@ -1,10 +1,10 @@
 var fs = require('fs'),
-	tmp = "build/tmp";
+		tmp = "build/tmp";
 
 function combineFiles (files) {
 	var content = '';
 	for (var i = 0, len = files.length; i < len; i++) {
-		content += fs.readFileSync(files[i], 'utf8') +"\n\n";		
+		content += fs.readFileSync(files[i], 'utf8') +"\n\n";
 	}
 	return content;
 }
@@ -73,3 +73,52 @@ exports.deleteBuildFolder = function(){
 		fs.rmdirSync('build')
 	} 
 }
+
+/**
+ * Search into an array one string and return the index
+ * @param {Array} files - array files
+ * @param {String} stringToMatch - string to find
+ * @return {Number} - index where param "stringToMatch" is
+ */
+function getStringIndexIntoArray(items, stringToMatch){
+	return items.findIndex(function(item) {
+		return item.indexOf(stringToMatch) > -1
+	})
+}
+
+exports.getStringIndexIntoArray = getStringIndexIntoArray;
+
+/**
+ * Generate the "script" tag from different files to load them dynamically
+ * 
+ * IMPORTANT - This function must be implemented (or copy it from here) where
+ * we want to use the option to load the "blocked scripts"
+ *
+ * @param {String} type - <optional> string to identify the script to load
+ */
+function loadBlockedScripts(type) {
+	var currentType = typeof type === 'string'
+		? type
+		: 'javascript/blocked'
+
+	if (document) {
+		var scripts = document.getElementsByTagName('SCRIPT');
+		var scriptsToLoad = [];
+
+		for (var i = 0; i < scripts.length; i++) {
+			if (scripts[i].getAttribute('src') && scripts[i].getAttribute('type') === currentType) {
+				var currentScript = document.createElement('script');
+
+				currentScript.src = scripts[i].getAttribute('src');
+				currentScript.type = 'application/javascript';
+				scriptsToLoad.push(currentScript)
+			}
+		}
+
+		for (var i = 0; i < scriptsToLoad.length; i++) {
+			document.head.appendChild(scriptsToLoad[i]);
+		}
+	}
+};
+
+exports.loadBlockedScripts = loadBlockedScripts;

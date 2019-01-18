@@ -1,6 +1,5 @@
 var build = require("./build.js"),
-	utils = require("./utils.js"),
-	exec = require("child_process").exec;
+		utils = require("./utils.js");
 
 function make(opts){
 	if (!opts){
@@ -47,18 +46,17 @@ function make(opts){
 	utils.createDirIfNotExist(opts.outputPath + "/fonts");
 
 	var htaccess = "RewriteEngine On\n" +
-					"RewriteCond %{REQUEST_FILENAME} !-f\n" +
-					"RewriteCond %{REQUEST_FILENAME} !-d\n" +
-					"RewriteCond %{REQUEST_URI} !index\n" +
-					"RewriteRule (.*) index.html [L]\n";
+								"RewriteCond %{REQUEST_FILENAME} !-f\n" +
+								"RewriteCond %{REQUEST_FILENAME} !-d\n" +
+								"RewriteCond %{REQUEST_URI} !index\n" +
+								"RewriteRule (.*) index.html [L]\n";
 
 	var debug = opts && opts.debug===true ? true : false;
 
 	if (!debug){
 		build.buildJS({
 			"files": opts.deps.JS,
-			"outputPath" : opts.outputPath + "/js",
-			"outSourceMap" :  opts.outSourceMap
+			"outputPath" : opts.outputPath + "/js"
 		});
 	}
 
@@ -76,13 +74,12 @@ function make(opts){
 			"config": opts.deps.config,
       "compress": opts.compressHTML
 		});
-	}
-	else{
+	} else {
 
 		var i18n = require("i18n");
 		i18n.configure({
-		    locales:opts.langs,
-		    directory: opts.outputPath + "/locales"
+			locales:opts.langs,
+			directory: opts.outputPath + "/locales"
 		});
 
 		for (var i=0;i< opts.langs.length;i++){
@@ -115,8 +112,6 @@ function make(opts){
 			extraResources(opts);
 		}
 	});
-
-
 }
 
 function extraResources(opts){
@@ -143,13 +138,12 @@ function extraResources(opts){
 		}
 
 	}
-	if (!error)
+	if (!error) {
 		console.log("Build process completed");
+	}
 
 	// Clean build folder
 	utils.deleteBuildFolder();
-
-
 }
 
 exports.make = make;

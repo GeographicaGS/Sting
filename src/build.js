@@ -1,8 +1,12 @@
 var fs = require('fs'),
-    jshint = require('jshint'),
-	UglifyCSS = require('uglifycss'),
-	utils = require("./utils.js"),
-  babel = require("babel-core");;
+		jshint = require('jshint'),
+		UglifyCSS = require('uglifycss'),
+		utils = require("./utils.js"),
+		babel = require("babel-core"),
+		// To split the files
+		mainJsFile = 'main.min.js',
+		thirdJsFile = 'third.min.js',
+		tagMainBlock = '@finish-main-block';
 
 function combineFilesTemplate(files,templateFolders) {
 	var content = '';
@@ -33,51 +37,51 @@ exports.buildJS = function (opts) {
 	console.log("-------");
 
 	var files = utils.getFiles(opts.files),
-		targetStr = "";
+			mainFiles = [],
+			thirdFiles = [],
+			// Check out if exist a "main-block" in load files
+			indexMainBlock = utils.getStringIndexIntoArray(files, tagMainBlock);
 
-	// var localopts = {
-	// 	"warnings" : true,
-	// };
-  //
-	// if (opts.outSourceMap){
-	// 	localopts["outSourceMap"] = opts.outSourceMap;
-	// 	localopts["sourceRoot"] = "/src";
-	// }
-  //
-	// if (opts.sourceRoot) {
-	// 	localopts["sourceRoot"] = opts.sourceRoot;
-	// }
-  process.env.BABEL_ENV='production';
+	// Set which are the files to will compose the JS files
+	if (indexMainBlock > -1) {
+		files[indexMainBlock] = files[indexMainBlock].replace(tagMainBlock, '');// Remove from files the tag value tagMainBlock
+		mainFiles = files.slice(0, (indexMainBlock + 1)) // Files to "main.min.js" file
+		thirdFiles = files.slice((indexMainBlock + 1)) // Files to "third.min.js" file
+	} else {
+		mainFiles = files // Files to "main.min.js" file
+	}
 
-  var code = utils.combineFiles(files);
-	var result = babel.transform(code, {
-    /*"presets": [
-      ["env", {
-        "targets": {
-          "chrome": 52
-        }
-      }]
-    ],*/
-    "presets": ["env"],
-    "env": {
-      "production": {
-        "presets": ["babili"]
-      }
-    }
-  });
-  ///console.log(result.code);
+	process.env.BABEL_ENV='production';
 
-	var path = opts.outputPath + "/main.min.js";
-	fs.writeFileSync(path, result.code);
+	// Create the different JS files
+	if (mainFiles.length > 0) {
+		createMinFile(mainFiles, mainJsFile)
+	}
 
-	// if (opts.outSourceMap){
-	// 	console.log("Writing " + localopts["outSourceMap"]);
-	// 	var path = opts.outputPath + "/" + localopts["outSourceMap"];
-	// 	fs.writeFileSync(path, result.map);
-	// }
+	if (thirdFiles.length > 0) {
+		createMinFile(thirdFiles, thirdJsFile)
+	}
+
+	/**
+	 * Create new JS minified file 
+	 * @param {Array} files - files composes the minified file
+	 * @param {String} name - name file
+	 */
+	function createMinFile(files, name) {
+		var code = utils.combineFiles(files);
+		var result = babel.transform(code, {
+			"presets": ["env"],
+			"env": {
+				"production": {
+					"presets": ["babili"]
+				}
+			}
+		});
+		var path = opts.outputPath + '/' + name;
+		fs.writeFileSync(path, result.code);
+	}
 
 	console.log("Building javascript code completed successfully");
-
 };
 
 
@@ -219,8 +223,18 @@ function loadEnvVarsFile(inputFile) {
 	});
 }
 
-function getScriptTag(file){
-	return "<script type='text/javascript' src='" + file + "'></script>";
+/**
+ * Get the "script" tag with the correct "type" and "src" attributte
+ * @param {String} file - name file
+ * @param {Boolean} isBlocked - this file will be blocked in initial load?
+ * @return {String} - string tag
+ */
+function getScriptTag(file, isBlocked){
+	var currentType = isBlocked
+		? 'javascript/blocked'
+		: 'text/javascript';
+
+	return "<script type='" + currentType + "' src='" + file + "'></script>";
 }
 
 exports.buildHTML = function (opts){
@@ -231,7 +245,10 @@ exports.buildHTML = function (opts){
 		debug = opts.debug,
     compress = opts.compress===false ? false: true,
 		templateString = combineFilesTemplate(templateFiles,opts.templateFolder);
-		index = fs.readFileSync(opts.templateFolder[0] +"/index.html", "utf8");
+		index = fs.readFileSync(opts.templateFolder[0] +"/index.html", "utf8"),
+		// Check out if exist a "main-block" in load files
+		indexMainBlock = utils.getStringIndexIntoArray(jsFiles, tagMainBlock),
+		hasMainBlock = (indexMainBlock > -1);
 
 	if (lang){
 		var translate = require("./translate.js")(opts.i18n);
@@ -259,17 +276,21 @@ exports.buildHTML = function (opts){
 	var js = "";
 
 	if (debug){
-		for (var i=0;i<jsFiles.length;i++){
-			//var f = typeof jsFiles[i]=="object" ? jsFiles[i].src : jsFiles[i];
-			var prefix = opts.relativePath ? opts.relativePath : '';
-			js += getScriptTag(prefix + "/src/" + jsFiles[i]) + "\n";
+		// Remove from files the tag value tagMainBlock
+		if (hasMainBlock) {
+			jsFiles[indexMainBlock] = jsFiles[indexMainBlock].replace(tagMainBlock, '')
 		}
-	}
-	else{
 
+		for (var i=0; i < jsFiles.length; i++){
+			var prefix = opts.relativePath ? opts.relativePath : '';
+			js += getScriptTag(prefix + "/src/" + jsFiles[i], (hasMainBlock && indexMainBlock < i)) + "\n";
+		}
+	} else{
 		var prefix = opts.relativePath ? opts.relativePath : '';
-
-		js += getScriptTag(prefix + "/js/main.min.js");
+		js += getScriptTag(prefix + '/js/' + mainJsFile, false);
+		if (hasMainBlock) {
+			js += getScriptTag(prefix + '/js/' + thirdJsFile, true);
+		}
 	}
 
 	index = index.replace("</body>",js + "</body>");
